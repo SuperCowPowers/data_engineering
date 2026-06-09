@@ -46,15 +46,16 @@ uv add --dev kaggle
 uv run kaggle datasets download -d sorkun/aqsoldb-a-curated-aqueous-solubility-dataset -p data --unzip
 ```
 
-## 2. Add pandas to the project
+## 2. Install dependencies
 
-From the repo root:
+pandas is already declared in `pyproject.toml`, so just sync the environment
+from the repo root:
 
 ```bash
-uv add pandas
+uv sync
 ```
 
-This adds pandas to `dependencies` in `pyproject.toml` and updates `uv.lock`.
+(To add other packages later: `uv add <name>`.)
 
 ## 3. Read the CSV into a DataFrame
 
