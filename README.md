@@ -53,7 +53,7 @@ Prefer the classic workflow? Activate the env and use `python` directly:
 
 ```bash
 source .venv/bin/activate
-python -m data_engineering.example
+python path/to/script.py
 ```
 
 ## Editor setup
