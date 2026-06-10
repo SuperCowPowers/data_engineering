@@ -46,11 +46,8 @@ you don't have it, and builds the environment. That's the whole setup.
 ## Running code
 
 ```bash
-uv run python -m data_engineering.example      # run a module
 uv run python path/to/script.py                # run a script
 ```
-
-`uv run` uses the project's environment automatically — no activation needed.
 
 Prefer the classic workflow? Activate the env and use `python` directly:
 
@@ -74,16 +71,6 @@ finds the installed packages.
 2. *Command Palette* (⌘⇧P) → **Python: Select Interpreter** → pick the one under
    `.venv`. VS Code usually auto-detects it on open.
 
-## Managing dependencies
-
-```bash
-uv add pandas            # add a runtime dependency
-uv add --dev ipython     # add a dev-only tool
-uv remove pandas         # remove one
-```
-
-These update `pyproject.toml` and `uv.lock`. Commit both so everyone gets
-identical environments.
 
 ## Tests
 
