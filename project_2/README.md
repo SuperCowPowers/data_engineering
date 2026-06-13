@@ -132,6 +132,11 @@ see what changes.)
 
 ### Connect it to the picture
 
+<p align="center">
+  <img src="images/boxplot_anatomy.svg" width="540"
+       alt="Anatomy of a vertical box plot: the box spans Q1 to Q3 (the IQR), a line marks the median, whiskers reach 1.5x IQR to the fences, and dots beyond the fences are outliers.">
+</p>
+
 When matplotlib draws a box plot:
 
 - the **box** spans Q1 to Q3 (that's the IQR),
