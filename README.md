@@ -2,7 +2,17 @@
 
 A shared workspace for code, experiments, and data pipelines.
 
-## Prerequisites
+## Projects
+
+- **[Project 1 — Reading CSV Files with Pandas](project_1/README.md)** — load a
+  real aqueous-solubility dataset (AQSolDB) into a pandas DataFrame and explore
+  it with shape, dtypes, summary stats, and filtering.
+- **[Project 2 — Summary Statistics & Outlier Detection](project_2/README.md)** —
+  compute quartiles and the IQR and implement Tukey's outlier rule from scratch
+  on the Palmer Penguins dataset, discovering why outliers only surface once you
+  group by species.
+
+## Prerequisites/Setup
 
 ### 1. Homebrew
 
@@ -97,5 +107,6 @@ data_engineering/
 ├── uv.lock                 # exact resolved versions (created by `uv sync`)
 ├── src/data_engineering/   # importable, shared code
 ├── tests/                  # pytest tests
-└── project_1/              # example project: reading CSVs with pandas
+├── project_1/              # reading CSVs with pandas
+└── project_2/              # summary statistics & outlier detection
 ```
