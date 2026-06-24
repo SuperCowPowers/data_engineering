@@ -222,3 +222,6 @@ project_1/data/
 
 # Project 2 dataset (downloaded by pull_data.py)
 project_2/data/*.csv
+
+# Project 3 dataset (downloaded by pull_data.py)
+project_3/data/*.csv

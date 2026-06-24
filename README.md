@@ -11,6 +11,10 @@ A shared workspace for code, experiments, and data pipelines.
   compute quartiles and the IQR and implement Tukey's outlier rule from scratch
   on the Palmer Penguins dataset, discovering why outliers only surface once you
   group by species.
+- **[Project 3 — Clustering & Dimensionality Reduction](project_3/README.md)** —
+  cluster the penguins by their measurements in native 4D with k-means, project
+  the result down to 2D with PCA, and plot it colored by cluster — a DataFrame
+  pipeline where each step adds a column.
 
 ## Prerequisites/Setup
 
@@ -108,5 +112,6 @@ data_engineering/
 ├── src/data_engineering/   # importable, shared code
 ├── tests/                  # pytest tests
 ├── project_1/              # reading CSVs with pandas
-└── project_2/              # summary statistics & outlier detection
+├── project_2/              # summary statistics & outlier detection
+└── project_3/              # clustering & dimensionality reduction
 ```
