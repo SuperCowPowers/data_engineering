@@ -15,6 +15,10 @@ A shared workspace for code, experiments, and data pipelines.
   cluster the penguins by their measurements in native 4D with k-means, project
   the result down to 2D with PCA, and plot it colored by cluster — a DataFrame
   pipeline where each step adds a column.
+- **[Project 4 — Using Claude (LLMs) from Python](project_4/README.md)** —
+  call Claude from Python: build a chat loop, give it a personality and a
+  memory, then turn it into an agent with tools (web search, reminders). Covers
+  API-key safety along the way.
 
 ## Prerequisites/Setup
 
@@ -113,5 +117,6 @@ data_engineering/
 ├── tests/                  # pytest tests
 ├── project_1/              # reading CSVs with pandas
 ├── project_2/              # summary statistics & outlier detection
-└── project_3/              # clustering & dimensionality reduction
+├── project_3/              # clustering & dimensionality reduction
+└── project_4/              # using Claude (LLMs) from Python
 ```
