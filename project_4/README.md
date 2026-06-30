@@ -18,7 +18,7 @@ Three steps, each building on the last:
 Talking to Claude from code requires an **API key** — a secret password that
 identifies your account and bills your usage.
 
-1. **Account** — Dad will set up the Anthropic account for you.
+1. **Account** — Set up your Anthropic account.
 2. **Create the key** — sign in at [console.anthropic.com](https://console.anthropic.com),
    go to **Settings → API Keys**, and click **Create Key**. Copy it immediately —
    it's shown **only once**. It looks like `sk-ant-api03-XXXX…`.
