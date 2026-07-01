@@ -228,3 +228,6 @@ project_3/data/*.csv
 
 # Project 4 (local agent state — not code)
 project_4/reminders.json
+
+# Project 4 SQLite database (local data — not code)
+project_4/*.db

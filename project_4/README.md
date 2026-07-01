@@ -5,11 +5,12 @@ with AI. You'll call Claude from Python, give it a personality, and then turn it
 into an **agent** that can use tools — search the news, save reminders, and act
 on your behalf.
 
-Three steps, each building on the last:
+Four steps, each building on the last:
 
 1. **Hello, Claude** — a chat loop: type a prompt, get a response, repeat.
 2. **Make it your own** — give it a memory, pick its model, then have fun with swappable personalities.
 3. **Claude as an agent** — give it tools so it can *do* things, not just talk.
+4. **Level up storage** — swap the agent's flat file for a real SQLite database.
 
 ---
 
@@ -409,6 +410,131 @@ into an agent.
 
 ---
 
+## Step 4 — Level up: a real database
+
+Your reminder bot already has persistent storage — `reminders.json` survives
+restarts. But a flat file has limits: every save rewrites the *entire* file, and
+to find "just the unfinished reminders" you'd have to load everything and filter
+in Python. Time to graduate to a real database.
+
+**SQLite** is perfect for this: a complete SQL database that lives in a single
+file, and it's **built into Python** (`import sqlite3` — nothing to install).
+Same core ideas as the big databases (Postgres, MySQL), small enough to learn in
+an afternoon. You're walking the classic progression:
+
+> in-memory list → JSON file → **real database**
+
+### The schema
+
+A database needs a *schema* — a definition of your table's columns. Reminders are
+tabular (each has text, a done-flag, a timestamp), so give each its own column:
+
+```python
+import sqlite3
+
+DB = "reminders.db"
+
+def init_db():
+    conn = sqlite3.connect(DB)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS reminders (
+            id      INTEGER PRIMARY KEY AUTOINCREMENT,  -- unique id, assigned for you
+            text    TEXT NOT NULL,                      -- the reminder
+            done    INTEGER NOT NULL DEFAULT 0,         -- 0 = todo, 1 = done (SQLite has no bool)
+            created TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+    """)
+    conn.commit()
+    conn.close()
+```
+
+Call `init_db()` once at startup. `CREATE TABLE IF NOT EXISTS` makes it safe to
+run every time.
+
+### The tool functions, now backed by SQL
+
+Same three-beat rhythm on every write: **connect → execute → commit & close.**
+These are drop-in replacements for the JSON-file versions from Step 3:
+
+```python
+def add_reminder(text):
+    conn = sqlite3.connect(DB)
+    conn.execute("INSERT INTO reminders (text) VALUES (?)", (text,))
+    conn.commit()
+    conn.close()
+    return f"Saved: {text}"
+
+def list_reminders():
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row          # read columns by name, like a dict
+    rows = conn.execute("SELECT id, text, done FROM reminders ORDER BY created").fetchall()
+    conn.close()
+    if not rows:
+        return "No reminders yet."
+    return "\n".join(f"{r['id']}. [{'x' if r['done'] else ' '}] {r['text']}" for r in rows)
+
+def complete_reminder(reminder_id):
+    conn = sqlite3.connect(DB)
+    conn.execute("UPDATE reminders SET done = 1 WHERE id = ?", (reminder_id,))
+    conn.commit()
+    conn.close()
+    return f"Marked reminder {reminder_id} done."
+```
+
+`list_reminders` now shows a checkbox — and it could just as easily ask the
+database for *only* the unfinished ones (`WHERE done = 0`), the kind of query a
+flat file can't do without loading everything.
+
+### ⚠️ The one rule of SQL: never build queries with f-strings
+
+See those `?` marks? That's a **parameterized query** — you pass the values
+separately and SQLite inserts them safely. It's tempting to write instead:
+
+```python
+conn.execute(f"INSERT INTO reminders (text) VALUES ('{text}')")   # ❌ NEVER do this
+```
+
+…but if someone's reminder is `'); DROP TABLE reminders; --`, that f-string turns
+it into a command that **deletes your whole table**. It's called *SQL injection*,
+and it's one of the most common security holes on the web. The `?` placeholder
+treats input as *data, never as code*, so that same evil string just gets saved
+as a harmless (if weird-looking) reminder. Always use `?`.
+
+### Wire it into the agent
+
+Two small changes to the Step 3 bot:
+
+1. Call `init_db()` once at startup.
+2. Add a `complete_reminder` tool so Claude can check things off:
+
+```python
+tools.append({
+    "name": "complete_reminder",
+    "description": "Mark a reminder as done, by its id number.",
+    "input_schema": {
+        "type": "object",
+        "properties": {"reminder_id": {"type": "integer", "description": "The reminder's id"}},
+        "required": ["reminder_id"],
+    },
+})
+```
+
+…and add one line to `run_tool` to dispatch it. Now you can say *"remind me to
+call grandma,"* later *"what are my reminders?"*, then *"mark number 2 done"* —
+and it all persists in a real database between runs.
+
+> **Columns vs. a JSON blob.** You *could* store each reminder as a blob of JSON
+> text in one column. That's a real technique — but save it for data that's
+> genuinely messy or nested (like a whole saved conversation), where the fields
+> change from row to row. For neat, tabular data like reminders, real columns
+> win: they're what let you *query* — sort, filter, count — which is the entire
+> reason to use a database instead of a file.
+
+> **Don't commit the database.** `reminders.db` is local data, not code — the repo
+> already ignores `project_4/*.db`.
+
+---
+
 ## What you'll have learned
 
 - How to call Claude from Python with the `anthropic` library — and why your
@@ -418,3 +544,6 @@ into an agent.
 - The **agent loop**: giving Claude tools, letting it decide when to use them,
   running them yourself, and feeding the results back — the foundation of every
   AI agent, including the one helping you write this code.
+- **Persistent storage done right**: moving from a flat file to a real **SQLite**
+  database — schemas, columns vs. JSON blobs, and why every SQL query uses `?`
+  placeholders instead of f-strings (SQL injection).
