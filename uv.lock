@@ -218,6 +218,7 @@ dependencies = [
     { name = "anthropic" },
     { name = "matplotlib" },
     { name = "pandas" },
+    { name = "python-dotenv" },
     { name = "scikit-learn" },
     { name = "umap-learn" },
 ]
@@ -233,6 +234,7 @@ requires-dist = [
     { name = "anthropic", specifier = ">=0.113.0" },
     { name = "matplotlib", specifier = ">=3.11.0" },
     { name = "pandas" },
+    { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "scikit-learn", specifier = ">=1.9.0" },
     { name = "umap-learn", specifier = ">=0.5.12" },
 ]
