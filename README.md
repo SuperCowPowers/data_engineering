@@ -19,6 +19,10 @@ A shared workspace for code, experiments, and data pipelines.
   call Claude from Python: build a chat loop, give it a personality and a
   memory, then turn it into an agent with tools (web search, reminders). Covers
   API-key safety along the way.
+- **[Project 5 — Supervised Modeling (XGBoost & PyTorch)](project_5/README.md)** —
+  the supervised sequel to Project 3: train XGBoost and a PyTorch neural net to
+  predict a penguin's sex (classification) and body mass (regression), and
+  compare them honestly.
 
 ## Prerequisites/Setup
 
@@ -118,5 +122,6 @@ data_engineering/
 ├── project_1/              # reading CSVs with pandas
 ├── project_2/              # summary statistics & outlier detection
 ├── project_3/              # clustering & dimensionality reduction
-└── project_4/              # using Claude (LLMs) from Python
+├── project_4/              # using Claude (LLMs) from Python
+└── project_5/              # supervised modeling (XGBoost & PyTorch)
 ```

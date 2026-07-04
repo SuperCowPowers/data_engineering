@@ -231,3 +231,6 @@ project_4/reminders.json
 
 # Project 4 SQLite database (local data — not code)
 project_4/*.db
+
+# Project 5 dataset (downloaded by pull_data.py)
+project_5/data/*.csv
