@@ -103,6 +103,7 @@ rather than pasting a finished answer — that's the whole point.
 import pandas as pd
 from xgboost import XGBClassifier, XGBRegressor
 from sklearn.metrics import accuracy_score, confusion_matrix, r2_score, mean_absolute_error
+from plotting import plot_predictions
 import data_prep
 
 # ===== Classification: predict sex =====
@@ -127,6 +128,7 @@ Xtr, Xte, ytr, yte = data_prep.regression_split()
 #   1. create + fit an XGBRegressor  (try n_estimators=300, max_depth=3, learning_rate=0.1)
 #   2. predict on Xte
 #   3. print R^2 (r2_score) and mean absolute error (mean_absolute_error), in grams
+#   4. call plot_predictions(yte, pred, "XGBoost: predicted vs actual") to SEE the error (Section 6)
 ```
 
 Run it on its own:
@@ -156,6 +158,7 @@ import torch
 import torch.nn as nn
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, r2_score, mean_absolute_error
+from plotting import plot_predictions
 import data_prep
 
 torch.manual_seed(42)
@@ -196,6 +199,7 @@ Xtr, Xte, ytr, yte = data_prep.regression_split()
 #   - train with nn.MSELoss(), epochs=500
 #   - after predicting, use the target scaler's .inverse_transform(...) to turn the
 #     scaled prediction back into grams, then print R^2 and MAE
+#   - finally, plot_predictions(yte, pred, "PyTorch: predicted vs actual") to SEE the error (Section 6)
 ```
 
 Run it on its own:
@@ -204,7 +208,40 @@ Run it on its own:
 uv run python pytorch_models.py     # from inside project_5/
 ```
 
-## 6. Why *two separate scripts*? (a real data-engineering lesson)
+## 6. See the error, don't just score it
+
+"R² 0.85" is a single number — it hides *where* the model does well and where it
+whiffs. So plot it. The standard regression diagnostic puts **actual on the
+x-axis, predicted on the y-axis, and draws the diagonal line where predicted ==
+actual**. Every point on the line was predicted perfectly; the spread *off* the
+line is the error, and now you can see its shape — does the model sag for the
+heaviest penguins? fan out at the extremes?
+
+`plotting.py` is provided:
+
+```python
+import matplotlib.pyplot as plt
+
+def plot_predictions(y_true, y_pred, title="Predicted vs actual"):
+    plt.figure(figsize=(5, 5))
+    plt.scatter(y_true, y_pred, alpha=0.6, edgecolor="black", linewidth=0.3)
+    lo = min(y_true.min(), y_pred.min())
+    hi = max(y_true.max(), y_pred.max())
+    plt.plot([lo, hi], [lo, hi], "r--", label="perfect prediction")   # the diagonal
+    plt.xlabel("actual body mass (g)")
+    plt.ylabel("predicted body mass (g)")
+    plt.title(title); plt.legend(); plt.tight_layout(); plt.show()
+```
+
+Both regression skeletons (Sections 4 and 5) already have a `YOUR CODE` step to
+call it. Put the XGBoost and PyTorch plots side by side: whichever cloud hugs the
+diagonal tighter is the more accurate model — now you can *see* the ~30 g MAE
+difference instead of just reading it.
+
+> Just regression here — for a classifier, the **confusion matrix** you printed in
+> Section 4 is the equivalent "where does it go wrong" view.
+
+## 7. Why *two separate scripts*? (a real data-engineering lesson)
 
 You might wonder why XGBoost and PyTorch live in **separate files** instead of one
 tidy comparison script. Here's the war story, because it's a genuine
@@ -226,7 +263,7 @@ process ever holds two OpenMP runtimes, so both just work.
 > your program around your environment's constraints" is exactly the kind of
 > thing real data engineers do all day.)
 
-## 7. The head-to-head — and the real lessons
+## 8. The head-to-head — and the real lessons
 
 Run both scripts and line up the numbers. You'll see something like:
 
@@ -257,7 +294,7 @@ data: not because it always wins, but because it gets you a strong result with f
 less that can break. Neural networks earn their keep on **big, unstructured** data
 — images, audio, text — which is where a future project would take them.
 
-## 8. The assignment
+## 9. The assignment
 
 `data_prep.py` is given. Your job is to complete the two model scripts by filling
 in the `YOUR CODE` gaps from Sections 4 and 5:
@@ -266,11 +303,12 @@ in the `YOUR CODE` gaps from Sections 4 and 5:
    (create → fit → predict → print metrics).
 2. **`pytorch_models.py`** — wire up the given net + training loop for both tasks,
    including the target-scaling trick in the regression half.
-3. Run each script **separately** and write down the comparison.
+3. Run each script **separately**, put the two predicted-vs-actual plots side by
+   side, and write down the comparison.
 4. Change `random_state` in `data_prep.py` to 2–3 other values, re-run, and watch
-   how much the "winner" moves — that's §7b in action.
+   how much the "winner" moves — that's §8b in action.
 
-## 9. Stretch goals
+## 10. Stretch goals
 
 - **Cross-validation.** Instead of one split, use `sklearn.model_selection.cross_val_score`
   (for XGBoost) to average over 5 folds — a trustworthy score instead of a noisy one.
@@ -286,7 +324,8 @@ in the `YOUR CODE` gaps from Sections 4 and 5:
 - The supervised setup — **features vs. labels**, and the cardinal rule of a
   held-out **train/test split**.
 - **Classification vs. regression**, and the right scorecard for each (accuracy /
-  confusion matrix vs. R² / MAE).
+  confusion matrix vs. R² / MAE) — plus the **predicted-vs-actual plot** that turns
+  a regression score into something you can *see*.
 - Two model families: **XGBoost** (`.fit()` and go) and a **PyTorch** neural net
   (scaling + a training loop), and the honest trade-off between them.
 - That model comparisons are **noisy** on small data — evaluate over several
