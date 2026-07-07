@@ -1,0 +1,7 @@
+[flake8]
+# Match black's line length (black's config lives in pyproject.toml).
+max-line-length = 120
+# E203 (whitespace before ':') and W503 (line break before binary operator)
+# both disagree with how black formats code, so let black win.
+extend-ignore = E203, W503
+exclude = .venv, .git, __pycache__, build, dist

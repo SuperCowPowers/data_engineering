@@ -10,18 +10,18 @@ measurments_df = df.select_dtypes(include="number")
 print(measurments_df)
 print("-------------------------------")
 
+
 # Find outliers IQR method
 def find_outliers_iqr(series):
     series = series.dropna()
 
     q1 = series.quantile(0.25)
-    q2 = series.quantile(0.50)
     q3 = series.quantile(0.75)
 
     iqr = q3 - q1
     lower_fence = q1 - 1.5 * iqr
     upper_fence = q3 + 1.5 * iqr
-    
+
     outliers = series[(series < lower_fence) | (series > upper_fence)]
 
     print("IQR: ", iqr)
@@ -34,6 +34,7 @@ def find_outliers_iqr(series):
     print()
 
     return outliers
+
 
 # Find outliers z-score method
 def find_outliers_zscore(series):
@@ -77,6 +78,7 @@ def series_data_analysis_iqr(series, title, axes=None):
     series.plot.box(ax=axes)
     axes.set_title(title)
 
+
 # Analyze multiple series (dataframe) of data
 def dataframe_data_analysis(dataframe, title):
     figure, axes = plt.subplots(1, len(dataframe.columns), figsize=(12, 4))
@@ -86,6 +88,7 @@ def dataframe_data_analysis(dataframe, title):
 
     plt.tight_layout()
     plt.show()
+
 
 dataframe_data_analysis(measurments_df, "measurments_df")
 

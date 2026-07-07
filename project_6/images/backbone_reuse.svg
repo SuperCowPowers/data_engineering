@@ -1,0 +1,56 @@
+<svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img"
+     font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <title>One frozen backbone, swap the head for the task</title>
+  <desc>The same pretrained, frozen backbone can feed either its original
+        1000-category ImageNet head (which we remove) or a new 5-breed head that
+        we train — showing the backbone is a reusable feature extractor.</desc>
+  <style>
+    .ttl{font-size:16px;font-weight:700;fill:#1f2328}
+    .lbl{font-size:12.5px;font-weight:600;fill:#1f2328}
+    .sub{font-size:11px;fill:#6e7781}
+    .frz{font-size:12px;font-weight:600;fill:#1f6feb}
+    .trn{font-size:12px;font-weight:600;fill:#e8590c}
+    .cap{font-size:11px;fill:#6e7781}
+    @media (prefers-color-scheme: dark){
+      .ttl{fill:#e6edf3}.lbl{fill:#e6edf3}.sub{fill:#8b949e}.cap{fill:#8b949e}
+    }
+  </style>
+  <defs>
+    <marker id="ah2" markerWidth="9" markerHeight="9" refX="6.5" refY="4" orient="auto">
+      <path d="M1,1 L7,4 L1,7 Z" fill="#9aa0a6"/>
+    </marker>
+  </defs>
+
+  <text class="ttl" x="360" y="30" text-anchor="middle">One backbone, swap the head for the job</text>
+
+  <!-- backbone -->
+  <rect x="26" y="92" width="196" height="84" rx="10" fill="#1f6feb" fill-opacity="0.09" stroke="#1f6feb" stroke-width="2"/>
+  <text class="frz" x="124" y="118" text-anchor="middle">Pretrained backbone</text>
+  <text class="sub" x="124" y="134" text-anchor="middle">learned generic vision</text>
+  <g transform="translate(88,148)">
+    <rect x="0" y="5" width="13" height="9" rx="2" fill="#1f6feb"/>
+    <path d="M2.5 5 V3 a4 4 0 0 1 8 0 V5" fill="none" stroke="#1f6feb" stroke-width="1.8"/>
+  </g>
+  <text class="frz" x="106" y="159">FROZEN</text>
+
+  <!-- branch arrows -->
+  <path d="M222 120 C 280 120, 290 82, 330 82" fill="none" stroke="#9aa0a6" stroke-width="1.5" marker-end="url(#ah2)"/>
+  <path d="M222 150 C 280 150, 290 190, 330 190" fill="none" stroke="#9aa0a6" stroke-width="1.5" marker-end="url(#ah2)"/>
+
+  <!-- original head (removed) -->
+  <rect x="336" y="54" width="356" height="58" rx="8" fill="#8b8b8b" fill-opacity="0.10" stroke="#9aa0a6" stroke-dasharray="5 4"/>
+  <text class="lbl" x="352" y="78">Original ImageNet head</text>
+  <text class="sub" x="352" y="96">1000 categories: cat, car, banana, …</text>
+  <text class="cap" x="676" y="86" text-anchor="end" fill="#9aa0a6">we remove this</text>
+
+  <!-- our head (trained) -->
+  <rect x="336" y="162" width="356" height="58" rx="8" fill="#e8590c" fill-opacity="0.12" stroke="#e8590c" stroke-width="2"/>
+  <text class="trn" x="352" y="186">Your new head</text>
+  <text class="sub" x="352" y="204">5 breeds: Beagle, Boxer, Pug, Samoyed, Shiba Inu</text>
+  <g transform="translate(624,175)">
+    <path d="M6 0 L7.4 4.6 L12 6 L7.4 7.4 L6 12 L4.6 7.4 L0 6 L4.6 4.6 Z" fill="#e8590c"/>
+  </g>
+  <text class="trn" x="642" y="187">TRAINS</text>
+
+  <text class="cap" x="360" y="242" text-anchor="middle">The body learned to see once — reuse it, and train only a small head for your own task.</text>
+</svg>

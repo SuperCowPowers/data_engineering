@@ -234,3 +234,7 @@ project_4/*.db
 
 # Project 5 dataset (downloaded by pull_data.py)
 project_5/data/*.csv
+
+# Project 6 dataset (~800MB, downloaded by torchvision) + saved model
+project_6/data/
+project_6/*.pt

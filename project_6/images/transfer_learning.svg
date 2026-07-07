@@ -1,0 +1,91 @@
+<svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg" role="img"
+     font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <title>Transfer learning: freeze the pretrained backbone, train a new head</title>
+  <desc>A dog photo flows into a pretrained ResNet-18 backbone whose weights are
+        frozen (reused, not trained), then into a new small head that is trained
+        to output five dog-breed probabilities.</desc>
+  <style>
+    .ttl{font-size:16px;font-weight:700;fill:#1f2328}
+    .lbl{font-size:12px;fill:#1f2328}
+    .sub{font-size:11px;fill:#6e7781}
+    .frz{font-size:12px;font-weight:600;fill:#1f6feb}
+    .trn{font-size:12px;font-weight:600;fill:#e8590c}
+    .cap{font-size:11px;fill:#6e7781}
+    @media (prefers-color-scheme: dark){
+      .ttl{fill:#e6edf3}.lbl{fill:#e6edf3}.sub{fill:#8b949e}.cap{fill:#8b949e}
+    }
+  </style>
+  <defs>
+    <marker id="ah" markerWidth="9" markerHeight="9" refX="6.5" refY="4" orient="auto">
+      <path d="M1,1 L7,4 L1,7 Z" fill="#9aa0a6"/>
+    </marker>
+  </defs>
+
+  <text class="ttl" x="400" y="30" text-anchor="middle">Transfer learning: freeze the body, train a new head</text>
+
+  <!-- Stage 1: input photo -->
+  <rect x="22" y="112" width="90" height="84" rx="8" fill="#8b8b8b" fill-opacity="0.12" stroke="#9aa0a6"/>
+  <text class="lbl" x="67" y="150" text-anchor="middle">input</text>
+  <text class="lbl" x="67" y="166" text-anchor="middle">photo</text>
+  <line x1="114" y1="154" x2="150" y2="154" stroke="#9aa0a6" stroke-width="1.5" marker-end="url(#ah)"/>
+
+  <!-- Stage 2: frozen backbone -->
+  <rect x="156" y="72" width="300" height="164" rx="10" fill="#1f6feb" fill-opacity="0.09" stroke="#1f6feb" stroke-width="2"/>
+  <text class="frz" x="306" y="96" text-anchor="middle">Pretrained ResNet-18 backbone</text>
+  <text class="sub" x="306" y="112" text-anchor="middle">already trained on millions of images</text>
+
+  <rect x="176" y="130" width="80" height="50" rx="6" fill="#1f6feb" fill-opacity="0.15" stroke="#1f6feb"/>
+  <text class="sub" x="216" y="151" text-anchor="middle">early</text>
+  <text class="sub" x="216" y="166" text-anchor="middle">edges</text>
+  <line x1="258" y1="155" x2="270" y2="155" stroke="#9aa0a6" stroke-width="1.2" marker-end="url(#ah)"/>
+  <rect x="272" y="130" width="80" height="50" rx="6" fill="#1f6feb" fill-opacity="0.15" stroke="#1f6feb"/>
+  <text class="sub" x="312" y="151" text-anchor="middle">mid</text>
+  <text class="sub" x="312" y="166" text-anchor="middle">textures</text>
+  <line x1="354" y1="155" x2="366" y2="155" stroke="#9aa0a6" stroke-width="1.2" marker-end="url(#ah)"/>
+  <rect x="368" y="130" width="80" height="50" rx="6" fill="#1f6feb" fill-opacity="0.15" stroke="#1f6feb"/>
+  <text class="sub" x="408" y="151" text-anchor="middle">late</text>
+  <text class="sub" x="408" y="166" text-anchor="middle">shapes</text>
+
+  <!-- frozen label with lock -->
+  <g transform="translate(212,204)">
+    <rect x="0" y="5" width="13" height="9" rx="2" fill="#1f6feb"/>
+    <path d="M2.5 5 V3 a4 4 0 0 1 8 0 V5" fill="none" stroke="#1f6feb" stroke-width="1.8"/>
+  </g>
+  <text class="frz" x="230" y="215">FROZEN — reused, not trained</text>
+
+  <line x1="456" y1="154" x2="494" y2="154" stroke="#9aa0a6" stroke-width="1.5" marker-end="url(#ah)"/>
+  <text class="sub" x="475" y="147" text-anchor="middle">features</text>
+
+  <!-- Stage 3: new trainable head -->
+  <rect x="500" y="118" width="150" height="72" rx="10" fill="#e8590c" fill-opacity="0.13" stroke="#e8590c" stroke-width="2"/>
+  <text class="trn" x="575" y="140" text-anchor="middle">New head</text>
+  <text class="sub" x="575" y="156" text-anchor="middle">outputs 5 breeds</text>
+  <g transform="translate(544,168)">
+    <path d="M7 0 L8.6 5.4 L14 7 L8.6 8.6 L7 14 L5.4 8.6 L0 7 L5.4 5.4 Z" fill="#e8590c"/>
+  </g>
+  <text class="trn" x="563" y="180">TRAINS</text>
+
+  <line x1="650" y1="154" x2="686" y2="154" stroke="#9aa0a6" stroke-width="1.5" marker-end="url(#ah)"/>
+
+  <!-- Stage 4: probability bars -->
+  <rect x="692" y="120" width="66" height="6" rx="3" fill="#4C78A8"/>
+  <rect x="692" y="134" width="16" height="6" rx="3" fill="#4C78A8" fill-opacity="0.55"/>
+  <rect x="692" y="148" width="10" height="6" rx="3" fill="#4C78A8" fill-opacity="0.55"/>
+  <rect x="692" y="162" width="7"  height="6" rx="3" fill="#4C78A8" fill-opacity="0.55"/>
+  <rect x="692" y="176" width="5"  height="6" rx="3" fill="#4C78A8" fill-opacity="0.55"/>
+  <text class="sub" x="692" y="200">breed</text>
+  <text class="sub" x="692" y="214">scores</text>
+
+  <!-- legend -->
+  <g transform="translate(150,256)">
+    <rect x="0" y="4" width="12" height="8" rx="2" fill="#1f6feb"/>
+    <path d="M2.3 4 V2.4 a3.6 3.6 0 0 1 7.2 0 V4" fill="none" stroke="#1f6feb" stroke-width="1.6"/>
+  </g>
+  <text class="cap" x="170" y="266">Frozen — reuses ResNet's vision, not trained</text>
+  <g transform="translate(470,254)">
+    <path d="M6 0 L7.4 4.6 L12 6 L7.4 7.4 L6 12 L4.6 7.4 L0 6 L4.6 4.6 Z" fill="#e8590c"/>
+  </g>
+  <text class="cap" x="488" y="266">Trainable — the only weights that change</text>
+
+  <text class="cap" x="400" y="288" text-anchor="middle">The original 1000-category ImageNet head is removed and replaced with this fresh 5-breed one.</text>
+</svg>

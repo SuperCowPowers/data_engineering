@@ -15,10 +15,7 @@ base_features = [
     "body_mass_g",
 ]
 
-features = base_features + [
-    "sex_FEMALE",
-    "sex_MALE"
-]
+features = base_features + ["sex_FEMALE", "sex_MALE"]
 
 
 def cluster_data(df, method="kmeans", k=3):
@@ -34,7 +31,7 @@ def cluster_data(df, method="kmeans", k=3):
 
     else:
         raise ValueError("method must be either 'kmeans' or 'hdbscan'")
-    
+
     df["cluster_id"] = labels
 
     return df
@@ -53,7 +50,7 @@ def test_k_values(df):
 
         inertias.append(model.inertia_)
         silhouette_scores.append(silhouette_score(X, labels))
-    
+
     plt.plot(k_values, inertias, marker="o")
     plt.xlabel("Number of clusters (k)")
     plt.ylabel("Inertia")
@@ -76,16 +73,16 @@ def dimensional_reduction(df, method="pca"):
         pca = PCA(n_components=2)
         coords = pca.fit_transform(X)
         print(pca.explained_variance_ratio_)
-    
+
     elif method == "tsne":
         coords = TSNE(n_components=2, perplexity=30, random_state=42).fit_transform(X)
-    
+
     elif method == "umap":
         coords = UMAP(n_components=2, random_state=42).fit_transform(X)
-    
+
     else:
         raise ValueError("method must be either 'pca', 'tsne', or 'umap'")
-    
+
     df["x"] = coords[:, 0]
     df["y"] = coords[:, 1]
 
@@ -93,13 +90,7 @@ def dimensional_reduction(df, method="pca"):
 
 
 def plot_clusters(df):
-    plt.scatter(
-        df["x"], 
-        df["y"], 
-        c=df["cluster_id"], 
-        cmap="viridis", 
-        s=20
-    )
+    plt.scatter(df["x"], df["y"], c=df["cluster_id"], cmap="viridis", s=20)
 
     plt.xlabel("PC 1")
     plt.ylabel("PC 2")
@@ -110,26 +101,14 @@ def plot_clusters(df):
 def plot_cluster_vs_species(df):
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
-    axes[0].scatter(
-        df["x"],
-        df["y"],
-        c=df["cluster_id"],
-        cmap="viridis",
-        s=20
-    )
+    axes[0].scatter(df["x"], df["y"], c=df["cluster_id"], cmap="viridis", s=20)
     axes[0].set_xlabel("PC 1")
     axes[0].set_ylabel("PC 2")
     axes[0].set_title("Colored by Cluster")
 
     species_codes = df["species"].astype("category").cat.codes
 
-    axes[1].scatter(
-        df["x"],
-        df["y"],
-        c=species_codes,
-        cmap="viridis",
-        s=20
-    )
+    axes[1].scatter(df["x"], df["y"], c=species_codes, cmap="viridis", s=20)
     axes[1].set_xlabel("PC 1")
     axes[1].set_ylabel("PC 2")
     axes[1].set_title("Colored by Species")
@@ -142,7 +121,7 @@ def main():
     df = pd.read_csv("data/penguins.csv")
 
     df = df.dropna(subset=base_features + ["sex"]).copy()
-    
+
     df = pd.get_dummies(df, columns=["sex"], dtype=int)
 
     test_k_values(df)

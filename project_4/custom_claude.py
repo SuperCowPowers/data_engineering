@@ -17,9 +17,12 @@ MODEL = "claude-opus-4-8"
 PERSONAS = {
     "normal": "You are a friendly, concise assistant.",
     "pirate": "You are Captain Cluck, a witty pirate first mate. Puns, slang, short answers.",
-    "coach":  "You are a hype gym coach. ALL-CAPS energy, one-liners, relentlessly positive.",
-    "tutor":  "You are a patient CS tutor. Explain with tiny examples and ask a guiding question instead of just handing over the answer.",
-    "robot":  "You are a deadpan robot. Literal, monotone, occasionally baffled by human feelings.",
+    "coach": "You are a hype gym coach. ALL-CAPS energy, one-liners, relentlessly positive.",
+    "tutor": (
+        "You are a patient CS tutor. Explain with tiny examples and ask a "
+        "guiding question instead of just handing over the answer."
+    ),
+    "robot": "You are a deadpan robot. Literal, monotone, occasionally baffled by human feelings.",
 }
 
 SYSTEM = PERSONAS["normal"]
@@ -31,35 +34,27 @@ tools = [
         "input_schema": {
             "type": "object",
             "properties": {
-                "task": {
-                    "type": "string", 
-                    "description": "The task to add."
-                },
+                "task": {"type": "string", "description": "The task to add."},
                 "priority": {
                     "type": "string",
-                    "description": "Task priority: low, medium, or high."
+                    "description": "Task priority: low, medium, or high.",
                 },
                 "estimated_time": {
                     "type": "string",
-                    "description": "Estimated time to complete the task."
-                }
+                    "description": "Estimated time to complete the task.",
+                },
             },
-            "required": ["task"]
-        }
+            "required": ["task"],
+        },
     },
     {
         "name": "remove_task",
         "description": "Remove a task from the to-do list. Call this when the user wants to remove a task.",
         "input_schema": {
             "type": "object",
-            "properties": {
-                "task": {
-                    "type": "string",
-                    "description": "Which task to delete."
-                }
-            },
-            "required": ["task"]
-        }
+            "properties": {"task": {"type": "string", "description": "Which task to delete."}},
+            "required": ["task"],
+        },
     },
     {
         "name": "complete_task",
@@ -69,20 +64,17 @@ tools = [
             "properties": {
                 "task": {
                     "type": "string",
-                    "description": "Which task to mark as complete."
+                    "description": "Which task to mark as complete.",
                 }
             },
-            "required": ["task"]
-        }
+            "required": ["task"],
+        },
     },
     {
         "name": "list_tasks",
         "description": "List all of the user's saved tasks.",
-        "input_schema": {
-            "type": "object", 
-            "properties": {}
-        }
-    }
+        "input_schema": {"type": "object", "properties": {}},
+    },
 ]
 
 
@@ -99,17 +91,19 @@ def init_db():
             created TEXT NOT NULL DEFAULT (datetime('now'))
             )
         """
-    
+
     conn.execute(sql)
 
     conn.commit()
     conn.close()
+
 
 def load():
     if os.path.exists(TODO_FILE):
         with open(TODO_FILE) as f:
             return json.load(f)
     return []
+
 
 # Tools
 def add_task(task, estimated_time="unknown", priority="medium"):
@@ -119,10 +113,7 @@ def add_task(task, estimated_time="unknown", priority="medium"):
     """
 
     with sqlite3.connect(DB) as conn:
-        conn.execute(
-            sql,
-            (task, estimated_time, priority)
-        )
+        conn.execute(sql, (task, estimated_time, priority))
 
     return f"Saved: {task}"
 
@@ -134,11 +125,8 @@ def remove_task(task):
     """
 
     with sqlite3.connect(DB) as conn:
-        conn.execute(
-            sql,
-            (task,)
-        )
-    
+        conn.execute(sql, (task,))
+
     return f"Removed {task}"
 
 
@@ -150,10 +138,7 @@ def complete_task(task):
     """
 
     with sqlite3.connect(DB) as conn:
-        conn.execute(
-            sql,
-            (True, task)
-        )
+        conn.execute(sql, (True, task))
 
     return f"Completed {task}"
 
@@ -178,13 +163,11 @@ def list_tasks():
             estimated_time = row[4]
             created = row[5]
 
-            output.append(
-                f"""Task: {task}
+            output.append(f"""Task: {task}
 Priority: {priority}
 Status: {status}
 Estimated Time: {estimated_time}
-Created: {created}"""
-            )
+Created: {created}""")
 
         if not output:
             return "No tasks found."
@@ -199,7 +182,7 @@ def run_tool(name, tool_input):
                 tool_input["task"],
                 tool_input.get("estimated_time", "unknown"),
                 tool_input.get("priority", "medium"),
-                )
+            )
         case "remove_task":
             return remove_task(tool_input["task"])
         case "complete_task":
@@ -208,8 +191,8 @@ def run_tool(name, tool_input):
             return list_tasks()
         case _:
             return f"Unknown tool: {name}"
-        
-        
+
+
 def chat(user_message, messages):
     messages.append({"role": "user", "content": user_message})
 
@@ -236,11 +219,13 @@ def chat(user_message, messages):
         for block in response.content:
             if block.type == "tool_use":
                 output = run_tool(block.name, block.input)
-                results.append({
-                    "type": "tool_result",
-                    "tool_use_id": block.id,   # must match the request
-                    "content": output,
-                })
+                results.append(
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": block.id,  # must match the request
+                        "content": output,
+                    }
+                )
         messages.append({"role": "user", "content": results})
 
 
@@ -257,9 +242,11 @@ def run_claude():
 
         chat(user, messages)
 
+
 def main():
     init_db()
     run_claude()
+
 
 if __name__ == "__main__":
     main()

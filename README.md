@@ -23,6 +23,12 @@ A shared workspace for code, experiments, and data pipelines.
   the supervised sequel to Project 3: train XGBoost and a PyTorch neural net to
   predict a penguin's sex (classification) and body mass (regression), and
   compare them honestly.
+- **[Project 6 — Dog Breed Image Classifier (CNN + Transfer Learning)](project_6/README.md)** —
+  where deep learning shines: fine-tune a pretrained ResNet to name a dog's breed
+  from a photo, then classify your own dog.
+- **[Project 7 — Dog Breed Web App (Dash + Plotly)](project_7/README.md)** —
+  the last mile: wrap Project 6's saved model in a local drag-and-drop web page
+  that shows a live breed-probability chart.
 
 ## Prerequisites/Setup
 
@@ -123,5 +129,7 @@ data_engineering/
 ├── project_2/              # summary statistics & outlier detection
 ├── project_3/              # clustering & dimensionality reduction
 ├── project_4/              # using Claude (LLMs) from Python
-└── project_5/              # supervised modeling (XGBoost & PyTorch)
+├── project_5/              # supervised modeling (XGBoost & PyTorch)
+├── project_6/              # dog breed image classifier (CNN + transfer learning)
+└── project_7/              # dog breed web app (Dash + Plotly)
 ```

@@ -4,30 +4,32 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, r2_score, mean_absolute_error
 from plotting import plot_predictions
 import data_prep
-import matplotlib.pyplot as plt
 
 torch.manual_seed(42)
+
 
 # ----- GIVEN: the model and the training loop (read these carefully) -----
 def make_net(n_inputs):
     return nn.Sequential(
-        nn.Linear(n_inputs, 32), 
-        nn.ReLU(), 
+        nn.Linear(n_inputs, 32),
+        nn.ReLU(),
         nn.Linear(32, 16),
         nn.ReLU(),
         nn.Linear(16, 1),
     )
+
 
 def train(net, X, y, epochs, loss_fn):
     opt = torch.optim.Adam(net.parameters(), lr=0.01)
     X = torch.tensor(X, dtype=torch.float32)
     y = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
     for _ in range(epochs):
-        opt.zero_grad()            # reset gradients
+        opt.zero_grad()  # reset gradients
         loss = loss_fn(net(X), y)  # how wrong are we?
-        loss.backward()            # backprop: compute gradients
-        opt.step()                 # nudge the weights to reduce the loss
+        loss.backward()  # backprop: compute gradients
+        opt.step()  # nudge the weights to reduce the loss
     return net
+
 
 # ===== Classification: predict sex =====
 Xtr, Xte, ytr, yte = data_prep.classification_split()
@@ -47,13 +49,7 @@ scaled_Xte = scaler.transform(Xte)
 
 net = make_net(Xtr.shape[1])
 
-train(
-    net, 
-    scaled_Xtr, 
-    ytr.values, 
-    epochs=300, 
-    loss_fn=nn.BCEWithLogitsLoss()
-    )
+train(net, scaled_Xtr, ytr.values, epochs=300, loss_fn=nn.BCEWithLogitsLoss())
 
 with torch.no_grad():
     logits = net(torch.tensor(scaled_Xte, dtype=torch.float32))
@@ -83,13 +79,7 @@ scaled_ytr = y_scaler.fit_transform(ytr.values.reshape(-1, 1)).ravel()
 
 net = make_net(Xtr.shape[1])
 
-train(
-    net,
-    scaled_Xtr,
-    scaled_ytr,
-    epochs=500,
-    loss_fn=nn.MSELoss()
-)
+train(net, scaled_Xtr, scaled_ytr, epochs=500, loss_fn=nn.MSELoss())
 
 with torch.no_grad():
     scaled_pred = net(torch.tensor(scaled_Xte, dtype=torch.float32)).numpy()

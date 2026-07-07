@@ -13,7 +13,7 @@ for either model script to import.
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-DATA = "data/penguins.csv"                          # run the scripts from inside project_5/
+DATA = "data/penguins.csv"  # run the scripts from inside project_5/
 NUM = ["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"]
 
 

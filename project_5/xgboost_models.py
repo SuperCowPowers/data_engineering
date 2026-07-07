@@ -1,6 +1,11 @@
 import pandas as pd
 from xgboost import XGBClassifier, XGBRegressor
-from sklearn.metrics import accuracy_score, confusion_matrix, r2_score, mean_absolute_error
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    r2_score,
+    mean_absolute_error,
+)
 from plotting import plot_predictions
 import data_prep
 from sklearn.model_selection import cross_val_score
@@ -12,11 +17,11 @@ Xtr, Xte, ytr, yte = data_prep.classification_split()
 #   Reasonable settings: n_estimators=200, max_depth=3, learning_rate=0.1, eval_metric="logloss"
 #   (trees don't need scaled features — fit the raw X)
 clf = XGBClassifier(
-    n_estimators = 200,
+    n_estimators=200,
     learning_rate=0.1,
     eval_metric="logloss",
     max_depth=3,
-    random_state=42
+    random_state=42,
 )
 
 clf.fit(Xtr, ytr)
@@ -32,13 +37,7 @@ print("Accuracy:", accuracy)
 print("Confusion Matrix:")
 print(cm)
 
-cv_scores = cross_val_score(
-    clf,
-    pd.concat([Xtr, Xte]),
-    pd.concat([ytr, yte]),
-    cv=5,
-    scoring="accuracy"
-)
+cv_scores = cross_val_score(clf, pd.concat([Xtr, Xte]), pd.concat([ytr, yte]), cv=5, scoring="accuracy")
 
 print("CV accuracy scores:", cv_scores)
 print("Mean CV accuracy:", cv_scores.mean())
@@ -55,12 +54,7 @@ Xtr, Xte, ytr, yte = data_prep.regression_split()
 #   3. print R^2 (r2_score) and mean absolute error (mean_absolute_error), in grams
 #   4. call plot_predictions(yte, pred, "XGBoost: predicted vs actual") to SEE the error (Section 6)
 
-regressor = XGBRegressor(
-    n_estimators=300,
-    max_depth=3,
-    learning_rate=0.1,
-    random_state=42
-)
+regressor = XGBRegressor(n_estimators=300, max_depth=3, learning_rate=0.1, random_state=42)
 
 regressor.fit(Xtr, ytr)
 

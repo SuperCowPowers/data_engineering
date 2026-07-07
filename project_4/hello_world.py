@@ -11,11 +11,11 @@ while True:
     if prompt.strip().lower() == "exit":
         print("Goodbye!")
         break
-    
+
     response = client.messages.create(
         model="claude-opus-4-8",
         max_tokens=1024,
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
     )
 
     print(f"Claude: {response.content[0].text}\n")
