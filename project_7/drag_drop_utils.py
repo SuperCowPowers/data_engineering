@@ -54,16 +54,34 @@ def dropzone():
     )
 
 
-def resolve_image_url(url):
-    """Unwrap a Google Images "Copy link" URL to the real image address.
+def image_urls_to_try(url):
+    """Ordered list of image addresses to attempt for a dropped/pasted link.
 
-    Google's copy-link gives a *page* URL like
-    `https://www.google.com/imgres?...&imgurl=<the real .jpg>&...` — the actual
-    picture is hiding in the `imgurl` query parameter. A plain image URL has no
-    `imgurl`, so it passes straight through.
+    A Google Images "Copy link" is a *page* URL like
+    `https://www.google.com/imgres?...&imgurl=<full-res>&tbnid=<id>&...`. We try
+    Google's own **thumbnail first** (built from `tbnid`): it's small but lives on
+    Google's CDN and always loads, whereas the full-res `imgurl` is often on a site
+    that blocks hotlinking (that's the "cannot identify image file" error). The
+    model resizes everything to 224px anyway, so the thumbnail is plenty. A plain
+    image URL (no Google params) is used as-is.
     """
-    qs = parse_qs(urlparse(url.strip()).query)
-    return qs.get("imgurl", [url.strip()])[0]
+    url = url.strip()
+    qs = parse_qs(urlparse(url).query)
+    candidates = []
+    if "tbnid" in qs:
+        candidates.append(f"https://encrypted-tbn0.gstatic.com/images?q=tbn:{qs['tbnid'][0]}")
+    if "imgurl" in qs:  # fall back to the full-res original if the thumbnail is missing
+        candidates.append(qs["imgurl"][0])
+    if not candidates:
+        candidates.append(url)
+    return candidates
+
+
+def _fetch(url):
+    """GET the bytes at a URL. The User-Agent keeps sites from rejecting us as a bot."""
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310 (local teaching app)
+        return resp.read()
 
 
 def _image_from_data_url(data_url):
@@ -73,13 +91,14 @@ def _image_from_data_url(data_url):
 
 
 def _image_from_web(url):
-    """Download an image URL and return a PIL image.
-
-    The User-Agent header keeps sites from rejecting the request as a bot.
-    """
-    req = urllib.request.Request(resolve_image_url(url), headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310 (local teaching app)
-        return Image.open(io.BytesIO(resp.read())).convert("RGB")
+    """Download a web image (trying Google's thumbnail first) -> PIL image."""
+    last_error = None
+    for candidate in image_urls_to_try(url):
+        try:
+            return Image.open(io.BytesIO(_fetch(candidate))).convert("RGB")
+        except Exception as e:  # not an image / blocked / 404 -> try the next candidate
+            last_error = e
+    raise last_error
 
 
 def to_data_url(image):
