@@ -2,7 +2,7 @@
      font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
   <title>One frozen backbone, swap the head for the task</title>
   <desc>The same pretrained, frozen backbone can feed either its original
-        1000-category ImageNet head (which we remove) or a new 5-breed head that
+        1000-category ImageNet head (which we remove) or a new 25-breed head that
         we train — showing the backbone is a reusable feature extractor.</desc>
   <style>
     .ttl{font-size:16px;font-weight:700;fill:#1f2328}
@@ -46,7 +46,7 @@
   <!-- our head (trained) -->
   <rect x="336" y="162" width="356" height="58" rx="8" fill="#e8590c" fill-opacity="0.12" stroke="#e8590c" stroke-width="2"/>
   <text class="trn" x="352" y="186">Your new head</text>
-  <text class="sub" x="352" y="204">5 breeds: Beagle, Boxer, Pug, Samoyed, Shiba Inu</text>
+  <text class="sub" x="352" y="204">25 breeds: Beagle, Boxer, … Yorkshire Terrier</text>
   <g transform="translate(624,175)">
     <path d="M6 0 L7.4 4.6 L12 6 L7.4 7.4 L6 12 L4.6 7.4 L0 6 L4.6 4.6 Z" fill="#e8590c"/>
   </g>

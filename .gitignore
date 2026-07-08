@@ -238,3 +238,9 @@ project_5/data/*.csv
 # Project 6 dataset (~800MB, downloaded by torchvision) + saved model
 project_6/data/
 project_6/*.pt
+
+# Project 7 reference solution (answer key — students write app.py)
+project_7/app_completed.py
+
+# Local preview launch config (points at the answer key)
+.claude/launch.json

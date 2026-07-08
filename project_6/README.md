@@ -13,15 +13,15 @@ datacenter. So we do what real practitioners do — **transfer learning**.
 
 > Take a CNN already trained on millions of images (ImageNet). It *already* knows
 > edges, fur, ears, snouts, shapes. **Freeze all of that, throw away only its
-> final layer, and train a fresh final layer for our 5 dog breeds.**
+> final layer, and train a fresh final layer for our 25 dog breeds.**
 
 <p align="center">
   <img src="images/transfer_learning.svg" width="720"
-       alt="A dog photo enters a frozen pretrained ResNet-18 backbone (weights reused, never trained), which feeds a new trainable head that outputs 5 breed probabilities.">
+       alt="A dog photo enters a frozen pretrained ResNet-18 backbone (weights reused, never trained), which feeds a new trainable head that outputs 25 breed probabilities.">
 </p>
 
 You reuse the pretrained network's "eyes" and only teach it the last step —
-"given everything you already see, which of *these 5 breeds* is it?" That's why
+"given everything you already see, which of *these 25 breeds* is it?" That's why
 this trains in a couple of minutes on a laptop instead of needing a server farm.
 
 The backbone isn't special to dogs — it's a general-purpose *feature extractor*.
@@ -30,16 +30,22 @@ swap in a small head for your particular task.
 
 <p align="center">
   <img src="images/backbone_reuse.svg" width="660"
-       alt="The same frozen backbone can feed its original 1000-category ImageNet head (which we remove) or a new 5-breed head that we train.">
+       alt="The same frozen backbone can feed its original 1000-category ImageNet head (which we remove) or a new 25-breed head that we train.">
 </p>
 
 We'll use **ResNet18**, a well-known pretrained CNN that ships with torchvision.
 
-## Our 5 breeds
+## Our breeds: all 25 in the dataset
 
-**Beagle, Boxer, Pug, Samoyed, Shiba Inu** — visually distinct, so results are
-high and the confusion matrix is easy to read. (All five live in the Oxford-IIIT
-Pet dataset.)
+Oxford-IIIT Pet ships **25 dog breeds**, and we use all of them (see the `BREEDS`
+list in `data_setup.py`). Some are unmistakable — a fluffy white Samoyed, a Pug —
+but several are genuine look-alikes (an **American Pit Bull Terrier** vs. a
+**Staffordshire Bull Terrier** are hard even for people). That mix is the point:
+accuracy stays high but not perfect, and the confusion matrix gets genuinely
+interesting.
+
+> Want a near-perfect demo instead? Trim `BREEDS` down to a handful of visually
+> distinct breeds and retrain — fewer, more separable classes score higher.
 
 ## 1. Pull the data & sync
 
@@ -49,7 +55,7 @@ uv run python -c "import data_setup; data_setup.train_loader()"   # triggers the
 ```
 
 The first run downloads the Oxford-IIIT Pet dataset (~800 MB) into
-`project_6/data/` (git-ignored), then keeps just our 5 breeds. All the download +
+`project_6/data/` (git-ignored), then keeps just the breeds in `BREEDS`. All the download +
 filtering + image preprocessing lives in the provided **`data_setup.py`** — read
 it, but you don't write it.
 
@@ -75,10 +81,9 @@ that CNN, fully trained — you just reuse it.
   normalize), which is what lets us reuse the pretrained network.
 - **`viz.py`** — `show_grid(images, titles)` to display dogs in a labeled grid
   (great for seeing mistakes).
-- **`predict.py`** — classify a single photo (Section 6).
 
-You write two scripts — **`train_classifier.py`** and **`evaluate.py`** — from the
-skeletons below.
+You write three scripts — **`train_classifier.py`**, **`evaluate.py`**, and
+**`predict.py`** — from the skeletons below.
 
 ## 4. Write `train_classifier.py`
 
@@ -98,7 +103,7 @@ device = "mps" if torch.backends.mps.is_available() else "cpu"
 print("training on:", device)
 
 train_loader = data_setup.train_loader()
-num_classes = len(data_setup.BREEDS)          # 5
+num_classes = len(data_setup.BREEDS)          # 25 (however many you listed)
 
 # ===== TODO 1: load the pretrained network =====
 # ResNet18, already trained on ImageNet — it arrives knowing how to "see".
@@ -135,6 +140,8 @@ model.eval()
 #     (zero_grad -> forward -> loss -> backward -> step)
 
 # ===== Save the trained model (given) =====
+model.breeds = data_setup.BREEDS      # remember the class names WITH the model, so
+#                                       predict.py and Project 7 never need their own copy
 torch.save(model, "dog_model.pt")     # evaluate.py and Project 7 both load this
 print("saved dog_model.pt")
 ```
@@ -209,71 +216,119 @@ Run it (from inside `project_6/`):
 uv run python evaluate.py
 ```
 
-**What you should see:** test accuracy around **~99%**, with a nearly diagonal
-confusion matrix. The main slip is Pug↔Boxer (a few Pugs get called Boxers);
-everything else is near-perfect. Five distinct breeds + a pretrained network is an
-easy, satisfying win — that's the power of transfer learning.
+**What you should see:** test accuracy around **~92%** across the 25 breeds — lower
+than a 5-breed toy problem would give, and that's the honest reality of more (and
+more similar) classes. The confusion matrix is now 25×25, too big to eyeball, but
+its mistakes make sense: the single biggest one is **American Pit Bull Terrier ↔
+Staffordshire Bull Terrier** — two breeds that genuinely look near-identical.
+Distinct breeds (Samoyed, Pug) stay near-perfect. *That's* transfer learning being
+realistic, not just easy.
 
 ### Reading the confusion matrix: accuracy, precision, recall
 
 The confusion matrix is a grid — **rows are the true breed, columns are what the
-model predicted.** The diagonal is where they agree (correct); everything off the
-diagonal is a mistake, and *which* off-diagonal cell tells you *which* breeds got
-confused. Ours looks about like this:
+model predicted.** The diagonal is correct; off-diagonal cells are mistakes, and
+*which* cell tells you *which* breeds got confused. The full grid is 25×25, so
+let's zoom in on the two look-alike terriers (their columns also collect stray
+guesses from the other 23 breeds):
 
 ```
-              predicted →
-              Beagle  Boxer  Pug  Samoyed  Shiba
-true  Beagle    99      1     0      0       0
-      Boxer      0     99     0      0       0
-      Pug        0      3    97      0       0
-      Samoyed    0      0     0     99       1
-      Shiba      0      0     0      1      99
+                       predicted →
+                       Pit Bull   Staffie   (+23 others)
+true  Pit Bull            52         33          15
+      Staffordshire       15         57          17
 ```
 
-Three scores, all read straight off the grid:
+Three scores, all read off the grid:
 
-- **Accuracy** — overall fraction correct: the diagonal divided by the total
-  (here ≈ 493/499 ≈ **99%**). One number for the whole model. Handy, but it can
-  hide a single breed the model is quietly bad at.
+- **Accuracy** — overall fraction correct: the whole diagonal ÷ the total
+  (**~92%** here). One number for the model. Handy, but it hides *which* breeds are
+  weak.
 - **Recall** (for one breed) — of all the *real* photos of that breed, how many did
-  the model catch? Read **across its row**: `diagonal ÷ row total`. Pug's recall is
-  97/100 = **97%** — it *missed* 3 pugs (calling them Boxers).
+  the model catch? Read **across its row**: `diagonal ÷ row total`. Pit Bull's
+  recall is 52/100 = **52%** — it misses almost half, mostly calling them Staffies.
 - **Precision** (for one breed) — when the model *says* a breed, how often is it
-  right? Read **down its column**: `diagonal ÷ column total`. Boxer's precision is
-  99/103 = **96%** — 4 non-Boxers (3 Pugs + 1 Beagle) got *mislabeled* Boxer.
+  right? Read **down its column** (all 25 true breeds feed it): `diagonal ÷ column
+  total`. Staffie's precision is 57/105 = **54%** — lots of *other* dogs (pit bulls
+  especially) get mislabeled Staffie.
 
-Notice the pattern in that Pug↔Boxer mix-up: it shows up as **Pug having lower
-recall** (it misses some) *and* **Boxer having lower precision** (it over-claims) —
-the same mistake seen from two sides. A miss for one breed is a false alarm for
-another. Accuracy alone would've hidden which breed was the weak spot; precision
-and recall pin it down.
+See the pattern: that one clump of **33 pit-bulls-called-Staffie** shows up twice —
+it *drops Pit Bull's recall* (they got missed) *and* *drops Staffie's precision* (it
+over-claimed). A miss for one breed is a false alarm for another. Accuracy alone
+would've hidden this; precision and recall pin it on the terriers.
 
 > `sklearn` computes all of these at once — add
 > `from sklearn.metrics import classification_report` and
 > `print(classification_report(trues, preds, target_names=BREEDS))`.
 
-## 6. Classify your own dog 🐕
+## 6. Write `predict.py` — classify your own dog 🐕
 
-The reward. `predict.py` (provided) loads your saved model and classifies any
-photo:
+The reward — and your third script. **`predict.py` is the close cousin of
+`evaluate.py`:** both load the saved model and run images through it inside a
+`torch.no_grad()` block. The difference is what they're *for*:
+
+|                | `evaluate.py`                         | `predict.py`                          |
+| -------------- | ------------------------------------- | ------------------------------------- |
+| input          | the whole labeled **test set**        | **one new photo** you pass in         |
+| ground truth   | yes — used to score accuracy          | none — it's brand-new data            |
+| output         | accuracy + confusion matrix           | this photo's breed + probabilities    |
+
+That second column is **inference**: running the model on real, unlabeled data one
+example at a time. It's what actually happens in production — and it's exactly the
+step Project 7 will wrap in a web page.
+
+```python
+import sys
+import torch
+from PIL import Image
+from data_setup import BREEDS, TRANSFORM
+
+path = sys.argv[1]     # the photo to classify: uv run python predict.py my_dog.jpg
+
+# Load the saved model and switch to eval() — identical to evaluate.py (given).
+model = torch.load("dog_model.pt", map_location="cpu", weights_only=False)
+model.eval()
+
+# ===== TODO 1: turn ONE image file into a model-ready batch =====
+# evaluate.py got ready-made batches from the DataLoader. Here the "batch" is the
+# single new photo you supply, so you build it yourself: open the file, apply the
+# SAME preprocessing the model was trained with (TRANSFORM), then add a batch
+# dimension of 1 so the shape matches what the model expects.
+#     image = Image.open(path).convert("RGB")
+#     x = TRANSFORM(image).unsqueeze(0)          # shape (1, 3, 224, 224): a batch of one
+
+# ===== TODO 2: run inference and show every breed's probability =====
+# Same no-gradients block as evaluate.py — you're predicting, not training. But
+# evaluate.py only needed argmax (the single top guess) to score accuracy; here
+# there's no answer key, so show the FULL distribution with softmax and rank it.
+#     with torch.no_grad():
+#         probs = torch.softmax(model(x), dim=1)[0]      # one probability per breed
+#     ranked = sorted(zip(BREEDS, probs.tolist()), key=lambda t: t[1], reverse=True)
+#     print(f"\nPrediction for {path}:")
+#     for breed, p in ranked:
+#         print(f"  {breed:10s} {p:6.1%}  {'#' * round(p * 30)}")
+#     print(f"\n=> {ranked[0][0]}")
+```
+
+Run it (from inside `project_6/`):
 
 ```bash
 uv run python predict.py path/to/your_dog.jpg
 ```
 
-It prints a probability for *every* breed, e.g.:
+It should print a probability for *every* breed (all 25 now — here are the top few
+for a clear Pug):
 
 ```
-Pug         97.8%  #############################
-Boxer        1.3%
-Shiba Inu    0.6%
-Samoyed      0.2%
-Beagle       0.1%
+Pug                        99.9%  ##############################
+Boxer                       0.0%
+Staffordshire Bull Terrier  0.0%
+Chihuahua                   0.0%
+...  (21 more, all ~0%)
 => Pug
 ```
 
-Point it at a photo of your own dog! It only *knows* these 5 breeds, so a dog
+Point it at a photo of your own dog! It only *knows* these 25 breeds, so a dog
 that's none of them gets sorted into the nearest look-alike — a French bulldog
 will lean **Pug**, a husky will lean **Shiba Inu**. That "spread the probability
 over similar breeds" behavior is exactly what Project 7 turns into a live chart.
@@ -284,13 +339,14 @@ over similar breeds" behavior is exactly what Project 7 turns into a live chart.
    the whole lesson; make sure you understand *why* only the new layer learns.
 2. Complete **`evaluate.py`** — print the confusion matrix and **look at a grid of
    the dogs it got wrong**.
-3. Run `predict.py` on a photo of your own dog (or any dog off the internet).
+3. Complete **`predict.py`** and run it on a photo of your own dog (or any dog off
+   the internet) — your first taste of model *inference* on brand-new data.
 
 ## 8. Stretch goals
 
-- **Add more breeds.** Edit `BREEDS` in `data_setup.py` (Oxford Pets has ~25 dog
-  breeds — try `data_setup` breeds you like). Does accuracy drop? Which breeds get
-  confused, and do they *look* alike?
+- **Fewer or bigger.** We already use all 25 Oxford-Pet dog breeds. Trim `BREEDS`
+  to a handful of distinct ones and watch accuracy jump — or, for a real challenge,
+  step up to a bigger dataset (Stanford Dogs has 120 breeds).
 - **Fine-tune, don't just freeze.** Unfreeze the last block of the ResNet (set
   `requires_grad = True` on `model.layer4`) and train with a small learning rate.
   Does it help on so few images, or overfit?
