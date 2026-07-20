@@ -47,7 +47,11 @@ TOP_N = 5  # the bar + radar show only the most likely few (all 25 would be a me
 #   return df.sort_values("probability", ascending=False, ignore_index=True)   # winner first
 def classify(image):
     """PIL image -> DataFrame[breed, probability] -- predict.py's inference, as a table."""
-    raise NotImplementedError("TODO 1: build the DataFrame")
+    x = TRANSFORM(image).unsqueeze(0)                 # <- same as predict.py
+    with torch.no_grad():                             # <- same as predict.py
+        probs = torch.softmax(model(x), dim=1)[0]     # <- same as predict.py: prob per breed
+    df = pd.DataFrame({"breed": BREEDS, "probability": probs.tolist()})   # the one new line
+    return df.sort_values("probability", ascending=False, ignore_index=True)
 
 
 # ===== TODO 2: horizontal bar chart (top few only) =====
@@ -64,7 +68,11 @@ def classify(image):
 #   return fig
 def bar_chart(df):
     """DataFrame -> horizontal bar chart of the TOP_N most likely breeds."""
-    raise NotImplementedError("TODO 2: build the bar chart")
+    top = df.head(TOP_N)
+    fig = px.bar(top.sort_values("probability"), x="probability", y="breed",
+                orientation="h", title=f"Top {TOP_N} breeds")
+    fig.update_xaxes(tickformat=".0%", range=[0, 1])   # show 0–100% on a full scale
+    return fig
 
 
 # ===== TODO 3: radar chart (top few only) =====
@@ -80,7 +88,10 @@ def bar_chart(df):
 #   return fig
 def radar_chart(df):
     """DataFrame -> radar (polar) chart of the TOP_N most likely breeds."""
-    raise NotImplementedError("TODO 3: build the radar chart")
+    fig = px.line_polar(df.head(TOP_N), r="probability", theta="breed", line_close=True,
+                        title=f"Top {TOP_N} radar", range_r=[0, 1])
+    fig.update_traces(fill="toself")                   # shade the enclosed area
+    return fig
 
 
 # ===== TODO 4: confidence gauge =====
@@ -100,7 +111,15 @@ def radar_chart(df):
 #   return fig
 def confidence_gauge(df):
     """DataFrame -> a single confidence dial for the top breed."""
-    raise NotImplementedError("TODO 4: build the gauge")
+    top = df.iloc[0]                                   # first row = most likely (we sorted it)
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=top["probability"] * 100,                # 0–100 for a percentage dial
+        number={"suffix": "%"},
+        title={"text": f"Confidence: {top['breed']}"},
+        gauge={"axis": {"range": [0, 100]}},
+    ))
+    return fig
 
 
 # ----------------------------------------------------------------------------
